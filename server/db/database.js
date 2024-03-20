@@ -1,7 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-mongoose.connect(`mongodb://${process.env.DB_HOST}:${process.env.PORT}/review`);
+mongoose.connect(`mongodb://${process.env.DB_HOST}/review`);
 
 const { Schema } = mongoose;
 
