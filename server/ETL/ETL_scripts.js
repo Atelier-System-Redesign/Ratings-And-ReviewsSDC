@@ -1,32 +1,39 @@
 const connection = require('../db/database.js');
 require('dotenv').config();
 
-const tableName = 'reviews';
-const filePath = process.env.REVIEWSCSV;
+const tables = [`${process.env.TABLE1}`, `${process.env.TABLE2}`, `${process.env.TABLE3}`, `${process.env.TABLE4}`];
 
-const loadReviews = `
-  COPY ${tableName}(id, product_id, rating,  unix_timestamp, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) FROM ${filePath} CSV HEADER
-`;
+const filePaths = [
+  process.env.TABLE1_CSV,
+  process.env.TABLE2_CSV,
+  process.env.TABLE3_CSV,
+  process.env.TABLE4_CSV,
+];
 
-// const stream = fs.createReadStream(filePath);
+// Define the COPY queries for each table
+const copyQueries = tables.map((table, index) => {
+  const filePath = filePaths[index];
+  return `
+    COPY ${table} FROM '${filePath}' CSV HEADER
+  `;
+});
 
-// stream.on('error', (err) => {
-//   console.error('Error reading file:', err);
-// });
-
-connection.query(loadReviews)
+// Execute COPY queries for each table
+Promise.all(copyQueries.map((query) => connection.query(query)))
   .then(() => {
-    console.log('Reviews loaded successfully');
+    console.log('All tables loaded!');
 
-    // update the primary key start value
-    connection.query("SELECT setval((SELECT pg_get_serial_sequence('reviews', 'id')), max(id)) FROM reviews")
+    // Update primary key start value for each table
+    Promise.all(tables.map((table) => connection.query(`
+        SELECT setval((SELECT pg_get_serial_sequence('${table}', 'id')), max(id)) FROM ${table}
+      `)))
       .then(() => {
-        console.log('serial update for reviews completed successfully');
+        console.log('Serial update for all tables completed successfully');
       })
       .catch((err) => {
-        console.error('Error executing serial update for reviews:', err);
+        console.error('Error running serial update for tables:', err);
       });
   })
   .catch((err) => {
-    console.error('Error executing COPY query:', err);
+    console.error('Error loading tables:', err);
   });
