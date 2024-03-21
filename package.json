@@ -15,7 +15,8 @@
     "express": "^4.18.3",
     "mongoose": "^8.2.2",
     "mysql2": "^3.9.2",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
