@@ -4,7 +4,7 @@ require('dotenv').config();
 const tableName = 'reviews';
 const filePath = process.env.REVIEWSCSV;
 
-const copyQuery = `
+const loadReviews = `
   COPY ${tableName}(id, product_id, rating,  unix_timestamp, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) FROM ${filePath} CSV HEADER
 `;
 
@@ -14,17 +14,17 @@ const copyQuery = `
 //   console.error('Error reading file:', err);
 // });
 
-connection.query(copyQuery)
+connection.query(loadReviews)
   .then(() => {
-    console.log('COPY operation completed successfully');
+    console.log('Reviews loaded successfully');
 
     // update the primary key start value
     connection.query("SELECT setval((SELECT pg_get_serial_sequence('reviews', 'id')), max(id)) FROM reviews")
       .then(() => {
-        console.log('serial update completed successfully');
+        console.log('serial update for reviews completed successfully');
       })
       .catch((err) => {
-        console.error('Error executing serial update:', err);
+        console.error('Error executing serial update for reviews:', err);
       });
   })
   .catch((err) => {
