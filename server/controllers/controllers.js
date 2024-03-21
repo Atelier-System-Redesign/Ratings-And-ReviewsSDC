@@ -31,7 +31,7 @@ exports.postReview = async (req, res) => {
 
   models.postReview(postDataReviews)
     .then((result) => {
-      reviewId = result.review_id;
+      reviewId = result.id;
       console.log(reviewId);
       req.body.photos.forEach((url) => {
         models.postReviewPhotos(reviewId, url)
