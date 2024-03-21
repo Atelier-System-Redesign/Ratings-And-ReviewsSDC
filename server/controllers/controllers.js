@@ -13,30 +13,21 @@ exports.postReview = async (req, res) => {
 
   let reviewId;
 
-  // const postDataPhotos = req.body.photos;
-
-  // const postDataCharacteristics = req.body.characteristics;
-
-  // const {
-  //   product_id,
-  //   rating,
-  //   summary,
-  //   body,
-  //   recommend,
-  //   name,
-  //   email,
-  //   photos,
-  //   characteristics,
-  // } = req.body;
-
   models.postReview(postDataReviews)
     .then((result) => {
       reviewId = result.id;
-      console.log(reviewId);
       req.body.photos.forEach((url) => {
-        models.postReviewPhotos(reviewId, url)
+        models.postReviewsPhotos(reviewId, url)
           .catch((err) => {
             console.error('Failed to add photo: ', err);
+          });
+      });
+    })
+    .then(() => {
+      Object.keys(req.body.characteristics).forEach((key) => {
+        models.postReviewsCharacteristics(key, reviewId, req.body.characteristics[key])
+          .catch((err) => {
+            console.error('Failed to add review characteristic: ', err);
           });
       });
       res.sendStatus(201);
@@ -45,14 +36,4 @@ exports.postReview = async (req, res) => {
       res.sendStatus(500);
       console.error('Failed to add review: ', err);
     });
-
-  // const savedPhotos = await Promise.all(photos.map(async (photo) => {
-  //   const newPhoto = new db.ReviewPhoto({ review_id: savedReview._id, url: photo.url });
-  //   return newPhoto.save();
-  // }));
-
-  // const savedCharacteristics = await Promise.all(characteristics.map(async (char) => {
-  //   const newCharacteristic = new Characteristic({ name: char.name, value: char.value });
-  //   return await newCharacteristic.save();
-  // }));
 };
