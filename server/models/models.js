@@ -2,14 +2,14 @@ const connection = require('../db/database.js');
 
 exports.postReview = (postData) => new Promise((resolve, reject) => {
   connection.query(
-    'INSERT INTO reviews (product_id, rating, summary, body, recommend, name, email) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+    'INSERT INTO reviews (product_id, rating, summary, body, recommend, name, email) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING review_id',
     [postData.product_id, postData.rating, postData.summary,
       postData.body, postData.recommend, postData.name, postData.email],
     (error, results) => {
       if (error) {
         reject(error);
       } else {
-        resolve(results);
+        resolve(results.rows[0]);
       }
     },
   );
