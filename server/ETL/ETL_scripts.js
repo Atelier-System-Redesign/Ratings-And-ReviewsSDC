@@ -1,4 +1,3 @@
-const fs = require('fs');
 const connection = require('../db/database.js');
 require('dotenv').config();
 
@@ -20,7 +19,7 @@ connection.query(copyQuery)
     console.log('COPY operation completed successfully');
 
     // update the primary key start value
-    connection.query("SELECT setval('serial', max(id)) FROM reviews")
+    connection.query("SELECT setval((SELECT pg_get_serial_sequence('reviews', 'id')), max(id)) FROM reviews")
       .then(() => {
         console.log('serial update completed successfully');
       })
