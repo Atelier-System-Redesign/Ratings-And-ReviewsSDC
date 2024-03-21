@@ -1,11 +1,14 @@
 require('dotenv').config();
 const express = require('express');
+const router = require('./routes.js');
 
 const app = express();
 
-const port = 3000 || process.env.PORT;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+app.use('/reviews', router);
 
 app.listen(port);
 console.log(`Listening at http://localhost:${port}`);
