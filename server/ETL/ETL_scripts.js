@@ -10,7 +10,8 @@ const filePaths = [
   process.env.TABLE4_CSV,
 ];
 
-// Define the COPY queries for each table
+const startTime = new Date();
+
 const copyQueries = tables.map((table, index) => {
   const filePath = filePaths[index];
   return `
@@ -18,12 +19,12 @@ const copyQueries = tables.map((table, index) => {
   `;
 });
 
-// Execute COPY queries for each table
 Promise.all(copyQueries.map((query) => connection.query(query)))
   .then(() => {
-    console.log('All tables loaded!');
+    const endTime = new Date();
+    const duration = (endTime - startTime) / 1000;
+    console.log(`All tables loaded! Time taken: ${duration}`);
 
-    // Update primary key start value for each table
     Promise.all(tables.map((table) => connection.query(`
         SELECT setval((SELECT pg_get_serial_sequence('${table}', 'id')), max(id)) FROM ${table}
       `)))
