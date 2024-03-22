@@ -37,3 +37,47 @@ exports.postReview = async (req, res) => {
       console.error('Failed to add review: ', err);
     });
 };
+
+exports.getReview = async (req, res) => {
+  const productId = req.query.product_id;
+  const count = req.query.count || 5;
+  const sort = req.query.sort || 'relevance';
+  const page = req.query.page || 0;
+  models.getReviews(productId, page, count, sort)
+    .then((reviews) => {
+      res.send({
+        product: productId,
+        page: parseInt(page, 10),
+        count: parseInt(count, 10),
+        results: reviews,
+      });
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to retrieve reviews: ', err);
+    });
+};
+
+exports.reportReview = async (req, res) => {
+  const productId = req.params.review_id;
+  models.reportReview(productId)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to report review: ', err);
+    });
+};
+
+exports.markHelpful = async (req, res) => {
+  const productId = req.params.review_id;
+  models.markHelpful(productId)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to mark review as helpful: ', err);
+    });
+};

@@ -56,3 +56,87 @@ exports.postReviewsCharacteristics = (characteristicId, reviewId, value) => new 
     },
   );
 });
+
+exports.getReviews = (productId, page, count, sort) => new Promise((resolve, reject) => {
+  let order;
+
+  if (sort === 'newest') {
+    order = 'date DESC';
+  } else if (sort === 'helpful') {
+    order = 'helpfulness DESC';
+  } else if (sort === 'relevant') {
+    order = 'helpfulness DESC, date DESC';
+  } else {
+    order = 'helpfulness DESC, date DESC';
+  }
+
+  connection.query(
+    `SELECT
+        r.id AS review_id,
+        r.rating,
+        r.summary,
+        r.recommend,
+        r.response,
+        r.body,
+        to_char(to_timestamp(r.unix_timestamp / 1000), 'YYYY-MM-DD"T"HH24:MI:SS.USZ') AS date,
+        r.reviewer_name,
+        r.helpfulness,
+        r.reported,
+        CASE
+          WHEN rp.id IS NULL THEN '[]'
+          ELSE json_agg(json_build_object('id', rp.id, 'url', rp.url))
+        END photos
+      FROM
+        reviews AS r
+      LEFT JOIN
+        reviews_photos AS rp ON r.id = rp.review_id
+      WHERE
+        r.product_id = $1
+      GROUP BY
+        r.id, rp.id
+      ORDER BY
+        ${order}
+      LIMIT
+        $2
+      OFFSET
+        $3`,
+    [productId, count, page * count],
+    (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results.rows);
+      }
+    },
+  );
+});
+
+exports.reportReview = (reviewId) => new Promise((resolve, reject) => {
+  connection.query(
+    `UPDATE reviews
+    SET reported = true
+    WHERE id = ${reviewId}`,
+    (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    },
+  );
+});
+
+exports.markHelpful = (reviewId) => new Promise((resolve, reject) => {
+  connection.query(
+    `UPDATE reviews
+    SET helpfulness = helpfulness + 1
+    WHERE id = ${reviewId}`,
+    (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    },
+  );
+});
