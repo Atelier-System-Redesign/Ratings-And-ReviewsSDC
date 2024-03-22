@@ -81,3 +81,15 @@ exports.markHelpful = async (req, res) => {
       console.error('Failed to mark review as helpful: ', err);
     });
 };
+
+exports.getMeta = async (req, res) => {
+  const productId = req.query.product_id;
+  models.getMeta(productId)
+    .then((response) => {
+      res.send(response);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to mark review as helpful: ', err);
+    });
+};

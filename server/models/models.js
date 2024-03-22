@@ -140,3 +140,35 @@ exports.markHelpful = (reviewId) => new Promise((resolve, reject) => {
     },
   );
 });
+
+exports.getMeta = (productId) => new Promise((resolve, reject) => {
+  connection.query(
+    `SELECT
+    json_object_agg(rating::text, number::text) AS ratings,
+    json_object_agg(recommend::text, rec_num::text) AS recommended
+    FROM (
+      SELECT rating, COUNT(*) AS number
+      FROM reviews
+      WHERE product_id = $1
+      GROUP BY rating
+    ) AS ratings_counts,
+    (
+      SELECT recommend, COUNT(*) AS rec_num
+      FROM reviews
+      WHERE product_id = $1
+      GROUP BY recommend
+    ) AS recommend_counts`,
+    [productId],
+    (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        const metaData = {
+          product_id: productId,
+          ...results.rows[0],
+        }
+        resolve(metaData);
+      }
+    },
+  );
+});

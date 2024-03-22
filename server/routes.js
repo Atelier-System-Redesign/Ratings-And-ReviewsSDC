@@ -3,7 +3,7 @@ const controllers = require('./controllers/controllers');
 
 router.get('/', controllers.getReview);
 
-// router.get('/meta', controller.);
+router.get('/meta', controllers.getMeta);
 
 router.post('', controllers.postReview);
 
