@@ -1,14 +1,14 @@
 const router = require('express').Router();
 const controllers = require('./controllers/controllers');
 
-// router.get('/', controller.);
+router.get('/', controllers.getReview);
 
-// router.get('/meta', controller.);
+router.get('/meta', controllers.getMeta);
 
 router.post('', controllers.postReview);
 
-// router.put('/:review_id/helpful', controller.);
+router.put('/:review_id/helpful', controllers.markHelpful);
 
-// router.put('/:review_id/report', controller.)
+router.put('/:review_id/report', controllers.reportReview);
 
 module.exports = router;

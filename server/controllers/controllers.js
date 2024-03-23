@@ -13,30 +13,21 @@ exports.postReview = async (req, res) => {
 
   let reviewId;
 
-  // const postDataPhotos = req.body.photos;
-
-  // const postDataCharacteristics = req.body.characteristics;
-
-  // const {
-  //   product_id,
-  //   rating,
-  //   summary,
-  //   body,
-  //   recommend,
-  //   name,
-  //   email,
-  //   photos,
-  //   characteristics,
-  // } = req.body;
-
   models.postReview(postDataReviews)
     .then((result) => {
       reviewId = result.id;
-      console.log(reviewId);
       req.body.photos.forEach((url) => {
-        models.postReviewPhotos(reviewId, url)
+        models.postReviewsPhotos(reviewId, url)
           .catch((err) => {
             console.error('Failed to add photo: ', err);
+          });
+      });
+    })
+    .then(() => {
+      Object.keys(req.body.characteristics).forEach((key) => {
+        models.postReviewsCharacteristics(key, reviewId, req.body.characteristics[key])
+          .catch((err) => {
+            console.error('Failed to add review characteristic: ', err);
           });
       });
       res.sendStatus(201);
@@ -45,14 +36,60 @@ exports.postReview = async (req, res) => {
       res.sendStatus(500);
       console.error('Failed to add review: ', err);
     });
+};
 
-  // const savedPhotos = await Promise.all(photos.map(async (photo) => {
-  //   const newPhoto = new db.ReviewPhoto({ review_id: savedReview._id, url: photo.url });
-  //   return newPhoto.save();
-  // }));
+exports.getReview = async (req, res) => {
+  const productId = req.query.product_id;
+  const count = req.query.count || 5;
+  const sort = req.query.sort || 'relevance';
+  const page = req.query.page || 0;
+  models.getReviews(productId, page, count, sort)
+    .then((reviews) => {
+      res.send({
+        product: productId,
+        page: parseInt(page, 10),
+        count: parseInt(count, 10),
+        results: reviews,
+      });
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to retrieve reviews: ', err);
+    });
+};
 
-  // const savedCharacteristics = await Promise.all(characteristics.map(async (char) => {
-  //   const newCharacteristic = new Characteristic({ name: char.name, value: char.value });
-  //   return await newCharacteristic.save();
-  // }));
+exports.reportReview = async (req, res) => {
+  const productId = req.params.review_id;
+  models.reportReview(productId)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to report review: ', err);
+    });
+};
+
+exports.markHelpful = async (req, res) => {
+  const productId = req.params.review_id;
+  models.markHelpful(productId)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to mark review as helpful: ', err);
+    });
+};
+
+exports.getMeta = async (req, res) => {
+  const productId = req.query.product_id;
+  models.getMeta(productId)
+    .then((response) => {
+      res.send(response);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error('Failed to get meta data: ', err);
+    });
 };
