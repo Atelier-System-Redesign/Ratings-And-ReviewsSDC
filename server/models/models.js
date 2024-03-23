@@ -29,20 +29,6 @@ exports.postReviewsPhotos = (reviewId, url) => new Promise((resolve, reject) => 
   );
 });
 
-// exports.postCharacteristics = (productId, name) => new Promise((resolve, reject) => {
-//   connection.query(
-//     'INSERT INTO characteristics (product_id, name) VALUES ($1, $2)',
-//     [productId, name],
-//     (error, results) => {
-//       if (error) {
-//         reject(error);
-//       } else {
-//         resolve(results);
-//       }
-//     },
-//   );
-// });
-
 exports.postReviewsCharacteristics = (characteristicId, reviewId, value) => new Promise((resolve, reject) => {
   connection.query(
     'INSERT INTO reviews_characteristics (characteristic_id, review_id, value) VALUES ($1, $2, $3)',
@@ -83,9 +69,9 @@ exports.getReviews = (productId, page, count, sort) => new Promise((resolve, rej
         r.helpfulness,
         r.reported,
         CASE
-          WHEN rp.id IS NULL THEN '[]'
-          ELSE json_agg(json_build_object('id', rp.id, 'url', rp.url))
-        END photos
+            WHEN COUNT(rp.id) = 0 THEN '[]'::json
+            ELSE json_agg(json_build_object('id', rp.id, 'url', rp.url))
+        END AS photos
       FROM
         reviews AS r
       LEFT JOIN
@@ -93,7 +79,7 @@ exports.getReviews = (productId, page, count, sort) => new Promise((resolve, rej
       WHERE
         r.product_id = $1
       GROUP BY
-        r.id, rp.id
+        r.id
       ORDER BY
         ${order}
       LIMIT
@@ -145,7 +131,22 @@ exports.getMeta = (productId) => new Promise((resolve, reject) => {
   connection.query(
     `SELECT
     json_object_agg(rating::text, number::text) AS ratings,
-    json_object_agg(recommend::text, rec_num::text) AS recommended
+    json_object_agg(recommend::text, rec_num::text) AS recommended,
+    (
+      SELECT
+        json_object_agg(name, json_build_object('id', id, 'value', AVG_value)) AS characteristics
+      FROM (
+        SELECT
+          c.name,
+          c.id,
+          AVG(rc.value) AS AVG_value
+        FROM reviews_characteristics rc
+        JOIN characteristics c ON rc.characteristic_id = c.id
+        JOIN reviews r ON rc.review_id = r.id
+        WHERE r.product_id = $1
+        GROUP BY c.id
+      ) AS characteristic_data
+    ) AS characteristics
     FROM (
       SELECT rating, COUNT(*) AS number
       FROM reviews
@@ -166,7 +167,7 @@ exports.getMeta = (productId) => new Promise((resolve, reject) => {
         const metaData = {
           product_id: productId,
           ...results.rows[0],
-        }
+        };
         resolve(metaData);
       }
     },

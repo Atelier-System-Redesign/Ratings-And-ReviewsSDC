@@ -90,6 +90,6 @@ exports.getMeta = async (req, res) => {
     })
     .catch((err) => {
       res.sendStatus(500);
-      console.error('Failed to mark review as helpful: ', err);
+      console.error('Failed to get meta data: ', err);
     });
 };
