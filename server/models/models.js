@@ -1,3 +1,6 @@
+const NodeCache = require('node-cache');
+
+const cache = new NodeCache();
 const connection = require('../db/database.js');
 
 exports.postReview = (postData) => new Promise((resolve, reject) => {
@@ -43,59 +46,68 @@ exports.postReviewsCharacteristics = (characteristicId, reviewId, value) => new 
   );
 });
 
-exports.getReviews = (productId, page, count, sort) => new Promise((resolve, reject) => {
-  let order;
-
-  if (sort === 'newest') {
-    order = 'date DESC';
-  } else if (sort === 'helpful') {
-    order = 'helpfulness DESC';
-  } else if (sort === 'relevant') {
-    order = 'helpfulness DESC, date DESC';
-  } else {
-    order = 'helpfulness DESC, date DESC';
+exports.getReviews = (productId, page, count, sort) => {
+  const cacheKey = `getReviews_${productId}_${page}_${count}_${sort}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return Promise.resolve(cachedData);
   }
+  return new Promise((resolve, reject) => {
+    let order;
 
-  connection.query(
-    `SELECT
-        r.id AS review_id,
-        r.rating,
-        r.summary,
-        r.recommend,
-        r.response,
-        r.body,
-        to_char(to_timestamp(r.unix_timestamp / 1000), 'YYYY-MM-DD"T"HH24:MI:SS.USZ') AS date,
-        r.reviewer_name,
-        r.helpfulness,
-        r.reported,
-        CASE
-            WHEN COUNT(rp.id) = 0 THEN '[]'::json
-            ELSE json_agg(json_build_object('id', rp.id, 'url', rp.url))
-        END AS photos
+    if (sort === 'newest') {
+      order = 'date DESC';
+    } else if (sort === 'helpful') {
+      order = 'helpfulness DESC';
+    } else if (sort === 'relevant') {
+      order = 'helpfulness DESC, date DESC';
+    } else {
+      order = 'helpfulness DESC, date DESC';
+    }
+
+    connection.query(
+      `SELECT
+      r.id AS review_id,
+      r.rating,
+      r.summary,
+      r.recommend,
+      r.response,
+      r.body,
+      to_char(to_timestamp(r.unix_timestamp / 1000), 'YYYY-MM-DD"T"HH24:MI:SS.USZ') AS date,
+      r.reviewer_name,
+      r.helpfulness,
+      r.reported,
+      CASE
+          WHEN COUNT(rp.id) = 0 THEN '[]'::json
+          ELSE json_agg(json_build_object('id', rp.id, 'url', rp.url))
+      END AS photos
       FROM
-        reviews AS r
+      reviews AS r
       LEFT JOIN
-        reviews_photos AS rp ON r.id = rp.review_id
+      reviews_photos AS rp ON r.id = rp.review_id
       WHERE
-        r.product_id = $1
+      r.product_id = $1
       GROUP BY
-        r.id
+      r.id
       ORDER BY
-        ${order}
+      ${order}
       LIMIT
-        $2
+      $2
       OFFSET
-        $3`,
-    [productId, count, page * count],
-    (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results.rows);
-      }
-    },
-  );
-});
+      $3`,
+      [productId, count, page * count],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          const data = results.rows;
+          cache.set(cacheKey, data, 3600);
+          resolve(data);
+        }
+      },
+    );
+  });
+};
 
 exports.reportReview = (reviewId) => new Promise((resolve, reject) => {
   connection.query(
@@ -127,49 +139,54 @@ exports.markHelpful = (reviewId) => new Promise((resolve, reject) => {
   );
 });
 
-exports.getMeta = (productId) => new Promise((resolve, reject) => {
-  connection.query(
-    `SELECT
-    json_object_agg(rating::text, number::text) AS ratings,
-    json_object_agg(recommend::text, rec_num::text) AS recommended,
-    (
+exports.getMeta = (productId) => {
+  const cacheKey = `getMeta_${productId}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return Promise.resolve(cachedData);
+  }
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT
+      json_object_agg(rating::text, number::text) AS ratings,
+      json_object_agg(recommend::text, rec_num::text) AS recommended,
+      (
       SELECT
-        json_object_agg(name, json_build_object('id', id, 'value', AVG_value)) AS characteristics
+          json_object_agg(name, json_build_object('id', id, 'value', AVG_value)) AS characteristics
       FROM (
-        SELECT
+          SELECT
           c.name,
           c.id,
           AVG(rc.value) AS AVG_value
-        FROM reviews_characteristics rc
-        JOIN characteristics c ON rc.characteristic_id = c.id
-        JOIN reviews r ON rc.review_id = r.id
-        WHERE r.product_id = $1
-        GROUP BY c.id
+          FROM reviews_characteristics rc
+          JOIN characteristics c ON rc.characteristic_id = c.id
+          JOIN reviews r ON rc.review_id = r.id
+          WHERE r.product_id = $1
+          GROUP BY c.id
       ) AS characteristic_data
-    ) AS characteristics
-    FROM (
+      ) AS characteristics
+      FROM (
       SELECT rating, COUNT(*) AS number
       FROM reviews
       WHERE product_id = $1
       GROUP BY rating
-    ) AS ratings_counts,
-    (
+      ) AS ratings_counts,
+      (
       SELECT recommend, COUNT(*) AS rec_num
       FROM reviews
       WHERE product_id = $1
       GROUP BY recommend
-    ) AS recommend_counts`,
-    [productId],
-    (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        const metaData = {
-          product_id: productId,
-          ...results.rows[0],
-        };
-        resolve(metaData);
-      }
-    },
-  );
-});
+      ) AS recommend_counts`,
+      [productId],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          const data = results.rows[0];
+          cache.set(cacheKey, data, 3600);
+          resolve(data);
+        }
+      },
+    );
+  });
+};
