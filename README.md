@@ -134,7 +134,7 @@ Project Atelier is run on the designated port. Local testing can be done via Pos
 ## Roadmap
 
 - [x] Deploy an API to handle Ratings & Reviews data
-- [x] Add indexes, a cache, and multiple servers to improve performance
+- [x] Add indexes, a cache, and multiple servers to improve performance (note: If you want to deploy this repo use at least 2 servers to obtain the same optimized results)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
