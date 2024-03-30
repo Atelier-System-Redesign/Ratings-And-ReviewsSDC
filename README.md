@@ -60,24 +60,16 @@
 ## About
 
 <div align="center">
-    <h3>Client Portal</h3>
-  <img src="./public/overview-demo.gif" alt="project landing page image" width="600px" />
-  <img src="./public/qa-demo.gif" alt="project landing page image" width="600px" />
-  <img src="./public/Section Demo.gif" alt="project landing page image" width="600px" />
-  <img src="./public/Reviews_Demo.gif" alt="project landing page image" width="600px" />
-</div>
-
-<br />
+   
 <p>
-  Project Atelier is a desktop and mobile friendly app utilizing Node.js, React and Express that is a modern e-commerce portal that is not just functional, but also intuitive and user-friendly.
+  Project Atelier is a desktop and mobile friendly app utilizing Node.js, React and Express that is a modern e-commerce portal that is not just functional, but also intuitive and user-friendly. The backend created here utilizes PostgreSQL and Node-Cache to create a seamless flow of data to the client, even when under load from over a thousand users a second.
 
 ### Built With
 
 ![node.js](https://img.shields.io/badge/node-%23000000.svg?style=for-the-badge&logo=node.js)
-![React](https://img.shields.io/badge/React-%23000000.svg?style=for-the-badge&logo=react&logoColor)
+![node-cache](https://img.shields.io/badge/node--cache-%23000000.svg?style=for-the-badge&logo=node.js)
 ![Express](https://img.shields.io/badge/express-%23000000.svg?style=for-the-badge&express=next.js)
-![Cloudinary](https://img.shields.io/badge/cloudinary-%23000000.svg?style=for-the-badge&logo=cloudinary)
-![Jest](https://img.shields.io/badge/jest-%23000000.svg?style=for-the-badge&logo=jest)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23000000.svg?style=for-the-badge&logo=postgresql)
 
 <p align="right">
   (<a href="#readme-top">back to top</a>)
@@ -86,7 +78,7 @@
 ## Getting Started
 
 <p>
-    Instructions to setup Project Atelier on your local machine below.
+    Instructions to setup the Ratings-And-Reviews API on your local machine below.
 </p>
 
 ### Prerequisites
