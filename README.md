@@ -140,8 +140,11 @@ Project Atelier is run on the designated port. Local testing can be done via Pos
 
 ## Optimizations
 
-1.  Decreased latency by 
-2.  Increased maximum load per second by
+1.  Decreased latency when getting reviews by approximately 99.86%
+2.  Decreased latency when getting metadata by approximately 99.82%
+3.  Increased maximum load per second by a factor of 25 when getting reviews
+4.  Increase maximum load per second by a factor of 20 when getting metadata
+5.  Increase maximum load per second by a factor of 2.5 when posting new reviews
 <!-- CONTRIBUTING -->
 
 ## Contributing
