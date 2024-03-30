@@ -62,7 +62,7 @@
 <div align="center">
    
 <p>
-  Project Atelier is a desktop and mobile friendly app utilizing Node.js, React and Express that is a modern e-commerce portal that is not just functional, but also intuitive and user-friendly. The backend created here utilizes PostgreSQL and Node-Cache to create a seamless flow of data to the client, even when under load from over a thousand users a second.
+  Project Atelier is a desktop and mobile friendly app utilizing Node.js, React and Express that is a modern e-commerce portal that is not just functional, but also intuitive and user-friendly. The backend created here utilizes PostgreSQL and Node-Cache to create a seamless flow of data to the client, even when under load from over two thousand users a second.
 
 ### Built With
 
